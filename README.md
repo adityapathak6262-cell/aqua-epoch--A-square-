@@ -16,7 +16,8 @@ The system analyzes physicochemical water parameters, predicts potability safety
 
 - **Team Name:** A-Square
 - **Team Members:**
-  - **Aditya Pathak** (Lead / Developer) — registered on Unstop
+  - **Aditya Pathak** 
+  — **Aaditya Dubey **
 - **Contact:** adityapathak6262@gmail.com
 - **Repository:** [https://github.com/adityapathak6262-cell/aqua-epoch--A-square-](https://github.com/adityapathak6262-cell/aqua-epoch--A-square-)
 
