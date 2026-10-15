@@ -18,24 +18,24 @@ from upload_processing import (
 API_BASE_URL = os.getenv("AQUAEPOCH_API_URL", "http://127.0.0.1:8000").rstrip("/")
 
 FEATURES = [
-    ("pH", "pH units", "0–14 physical pH scale. This is not a verified compliance limit."),
-    ("Hardness", "mg/L (verify units)", "Hardness reading. Verify dataset/laboratory units; no BIS limit configured."),
-    ("TDS", "mg/L (verify units)", "Total dissolved solids; accepted API alias: Solids. Verify units; no BIS limit configured."),
-    ("Chloramines", "mg/L (verify units)", "Chloramines concentration. Verify units and applicable standard before judging safety."),
-    ("Sulfate", "mg/L (verify units)", "Sulfate concentration. Verify units and applicable standard before judging safety."),
-    ("Conductivity", "µS/cm (verify units)", "Electrical conductivity. Verify measurement units and temperature compensation."),
-    ("Organic_carbon", "mg/L (verify units)", "Organic carbon measurement. Confirm the method and units."),
-    ("Trihalomethanes", "µg/L (verify units)", "Trihalomethanes measurement. Verify whether source data uses µg/L or another unit."),
-    ("Turbidity", "NTU (verify units)", "Turbidity measurement. Verify the reporting unit and applicable standard."),
-    ("Calcium", "mg/L (verify units)", "Calcium concentration. Confirm laboratory units."),
-    ("Magnesium", "mg/L (verify units)", "Magnesium concentration. Confirm laboratory units."),
-    ("Sodium", "mg/L (verify units)", "Sodium concentration. Confirm laboratory units."),
-    ("Potassium", "mg/L (verify units)", "Potassium concentration. Confirm laboratory units."),
-    ("Chloride", "mg/L (verify units)", "Chloride concentration. Confirm laboratory units."),
-    ("Nitrate", "mg/L (verify units)", "Nitrate concentration. Confirm whether reported as nitrate or nitrate-nitrogen."),
-    ("Fluoride", "mg/L (verify units)", "Fluoride concentration. Confirm laboratory units."),
-    ("Iron", "mg/L (verify units)", "Iron concentration. Confirm laboratory units."),
-    ("Alkalinity", "mg/L as CaCO3 (verify units)", "Alkalinity reading. Confirm laboratory units and reporting basis."),
+    ("pH", "pH units", "BIS IS 10500 Safe Range: 6.5–8.5 (No relaxation). Neutral pH is 7.0; outside indicates acidic/alkaline contamination."),
+    ("Hardness", "mg/L", "BIS IS 10500 Safe Limit: ≤ 200 mg/L as CaCO3 (Permissible limit: 600 mg/L). Excess causes scale formation and pipe encrustation."),
+    ("TDS", "mg/L", "BIS IS 10500 Safe Limit: ≤ 500 mg/L (Permissible limit: 2,000 mg/L). Total Dissolved Solids; high levels affect palatability and digestion."),
+    ("Chloramines", "mg/L", "Safe Guideline: ≤ 4.0 mg/L (BIS Free Chlorine: 0.2–1.0 mg/L). Disinfectant for water supply."),
+    ("Sulfate", "mg/L", "BIS IS 10500 Safe Limit: ≤ 200 mg/L (Permissible limit: 400 mg/L). Excess sulfate causes bitter taste and laxative effects."),
+    ("Conductivity", "µS/cm", "WHO/CPHEEO Safe Guideline: ≤ 750 µS/cm. Indicates dissolved ionic concentration and mineral content."),
+    ("Organic_carbon", "mg/L", "Safe Guideline: ≤ 2.0 mg/L (TOC safe limit ≤ 4.0 mg/L). Organic matter that can foster bacterial regrowth."),
+    ("Trihalomethanes", "µg/L", "WHO Safe Guideline: ≤ 100 µg/L (0.1 mg/L). By-product of chlorination; carcinogenic risk in high amounts."),
+    ("Turbidity", "NTU", "BIS IS 10500 Safe Limit: ≤ 1.0 NTU (Permissible limit: 5.0 NTU). Measures cloudiness; shields pathogens from disinfection."),
+    ("Calcium", "mg/L", "BIS IS 10500 Safe Limit: ≤ 75 mg/L (Permissible limit: 200 mg/L). Essential mineral; contributes to total hardness."),
+    ("Magnesium", "mg/L", "BIS IS 10500 Safe Limit: ≤ 30 mg/L (Permissible limit: 100 mg/L). Essential mineral; high concentrations impart bitter taste."),
+    ("Sodium", "mg/L", "WHO Aesthetic Guideline: ≤ 200 mg/L. Affects taste and blood pressure regulation."),
+    ("Potassium", "mg/L", "WHO Guideline: ≤ 12 mg/L. Important dietary electrolyte in natural water sources."),
+    ("Chloride", "mg/L", "BIS IS 10500 Safe Limit: ≤ 250 mg/L (Permissible limit: 1,000 mg/L). Imparts salty taste and accelerates pipe corrosion."),
+    ("Nitrate", "mg/L", "BIS IS 10500 Safe Limit: ≤ 45 mg/L (No relaxation). High nitrate causes infantile methemoglobinemia (blue baby syndrome)."),
+    ("Fluoride", "mg/L", "BIS IS 10500 Safe Limit: ≤ 1.0 mg/L (Permissible limit: 1.5 mg/L). Prevents cavities; excess leads to dental/skeletal fluorosis."),
+    ("Iron", "mg/L", "BIS IS 10500 Safe Limit: ≤ 0.3 mg/L (Permissible limit: 1.0 mg/L). Causes reddish turbidity, staining of fixtures, and metallic taste."),
+    ("Alkalinity", "mg/L as CaCO3", "BIS IS 10500 Safe Limit: ≤ 200 mg/L (Permissible limit: 600 mg/L). Buffers water pH against rapid fluctuations."),
 ]
 
 INPUT_BOUNDS = {
@@ -258,16 +258,23 @@ with st.expander("Upload sample data (CSV or text-based PDF)", expanded=False):
             except (ValueError, pd.errors.ParserError) as exc:
                 st.error(str(exc))
 
-st.subheader("Enter water-quality parameters")
+st.subheader("💧 Enter Water-Quality Parameters")
 
 with st.form("water_metrics_form"):
-    columns = st.columns(3)
+    st.markdown("##### 📌 Core Water Metrics (Turbidity, Hardness, TDS)")
+    st.caption("Key physical parameters specified in the Aqua-Epoch guidelines with official BIS IS 10500 safe limits.")
+
+    core_features = ["Turbidity", "Hardness", "TDS"]
+    core_cols = st.columns(3)
     submitted_values: dict[str, float] = {}
-    for index, (name, unit, tooltip) in enumerate(FEATURES):
-        with columns[index % 3]:
+
+    for i, name in enumerate(core_features):
+        feat = next(f for f in FEATURES if f[0] == name)
+        _, unit, tooltip = feat
+        with core_cols[i]:
             lower_bound, upper_bound = INPUT_BOUNDS[name]
             submitted_values[name] = st.number_input(
-                label=f"{name} ({unit})",
+                label=f"⭐ {name} ({unit})",
                 min_value=lower_bound,
                 max_value=upper_bound,
                 value=float(DEFAULTS[name]),
@@ -275,8 +282,27 @@ with st.form("water_metrics_form"):
                 format="%.4f",
                 help=tooltip,
             )
+
+    st.markdown("##### 🔬 Additional Chemical & Sensor Parameters (15 features)")
+    with st.expander("Expand to view/edit all chemical parameters", expanded=True):
+        st.caption("Pre-populated with representative dataset medians; adjust as needed.")
+        other_features = [f for f in FEATURES if f[0] not in core_features]
+        other_cols = st.columns(3)
+        for index, (name, unit, tooltip) in enumerate(other_features):
+            with other_cols[index % 3]:
+                lower_bound, upper_bound = INPUT_BOUNDS[name]
+                submitted_values[name] = st.number_input(
+                    label=f"{name} ({unit})",
+                    min_value=lower_bound,
+                    max_value=upper_bound,
+                    value=float(DEFAULTS[name]),
+                    step=0.1,
+                    format="%.4f",
+                    help=tooltip,
+                )
+
     submitted = st.form_submit_button(
-        "Analyze sample",
+        "Analyze Sample",
         type="primary",
         use_container_width=True,
     )

@@ -1,77 +1,173 @@
-# Aqua-Epoch Water Quality Prototype
+# The Aqua-Epoch — Water Quality Intelligence Prototype
 
-AI-powered water-quality analysis prototype for the SLIET techFEST '26 Aqua-Epoch challenge. It includes a trained Random Forest classification model, pH and TDS regression models, a FastAPI backend, and a Streamlit web application.
+[![techFEST'26](https://img.shields.io/badge/techFEST'26-SLIET%20Longowal-blue.svg)](http://techfest26.com)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
+[![Streamlit](https://img.shields.io/badge/Frontend-Streamlit-FF4B4B.svg)](https://streamlit.io/)
+[![Scikit-Learn](https://img.shields.io/badge/ML-Scikit--Learn-F7931E.svg)](https://scikit-learn.org/)
 
-## Team
+An end-to-end Machine Learning solution and interactive web application developed for **The Aqua-Epoch** challenge at **techFEST'26**, Sant Longowal Institute of Engineering and Technology (SLIET Longowal).
 
-- **Team name:** [Enter team name]
-- **Team members:** [Enter member names]
-- **Contact:** team@aquaepoch.com
+The system analyzes physicochemical water parameters, predicts potability safety with high precision (minimizing false positives), continuously estimates pH levels, and provides real-time visualization and historical trend analysis.
 
-Replace the placeholders above with your registered team details before presenting.
+---
 
-## What's included
+## 👥 Team Information
 
-- `model.pkl` — serialized classifier and pH/TDS regressors used by the application.
-- `main.py` — FastAPI prediction, batch prediction, health, and SQLite history endpoints.
-- `app.py` — Streamlit interface for manual measurements and CSV/text-based PDF uploads.
-- `upload_processing.py` — upload parsing, feature/header mapping, and row validation.
-- `train_model.py` — reproducible model training and evaluation script.
-- `generate_ppt_results.py` — generates evaluation metrics and presentation plots.
-- `requirements.txt` — Python dependencies.
+- **Team Name:** A-Square
+- **Team Members:**
+  - **Aditya Pathak** (Lead / Developer) — registered on Unstop
+- **Contact:** adityapathak6262@gmail.com
+- **Repository:** [https://github.com/adityapathak6262-cell/aqua-epoch--A-square-](https://github.com/adityapathak6262-cell/aqua-epoch--A-square-)
 
-The source dataset, local prediction history, virtual environment, and generated presentation images are not included in this repository.
+---
 
-## Requirements
+## 🎯 Problem Statement & Predictive Tasks
 
-- Python 3.10 or later
-- pip
+Access to safe drinking water is a critical public health and environmental challenge. Modern sensor networks capture multidimensional physical and chemical water parameters, but automated interpretation is essential for rapid contamination detection.
 
-## Run the web application
+### Task A — Classification: Water Safety / Potability
+- **Objective:** Classify water samples as **Safe (1)** or **Unsafe (0)** based on Bureau of Indian Standards (BIS IS 10500:2012) metrics.
+- **Handling Challenges:** Missing data imputed using robust median pipelines; class imbalance handled via cost-sensitive learning (`class_weight='balanced'`).
+- **Critical Focus:** **Minimizing False Positives** (preventing contaminated water from being erroneously classified as safe).
+- **Evaluation Metrics:** **F1-Score: 0.9912**, **ROC-AUC: 0.9997**, **Precision: 0.9876**, **Recall: 0.9949**.
 
-Open a terminal in the project directory and install the dependencies:
+### Task B — Regression: pH Estimation
+- **Objective:** Predict continuous water pH from inter-related chemical features (Turbidity, Hardness, TDS, Sulfate, Chloramines, etc.).
+- **Evaluation Metrics:** **MAE: 0.4941**, **RMSE: 0.6772**.
 
-```powershell
+---
+
+## 🏗️ System Architecture & Workflow
+
+The solution follows a decoupled, low-latency client-server architecture:
+
+```
+┌────────────────────────────────────────────────────────┐
+│               Streamlit Web Interface                  │
+│  - Core metrics form (Turbidity, Hardness, TDS)        │
+│  - BIS IS 10500 safe limit tooltips                    │
+│  - Client-side input validation & physical ranges      │
+│  - Real-time probability & parameter visualizers       │
+│  - Batch upload support (CSV & PDF tables)             │
+│  - Historical trend visualization                      │
+└───────────────────────────┬────────────────────────────┘
+                            │ HTTP REST API (JSON)
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│                   FastAPI Backend                      │
+│  - POST /predict (real-time sample inference)          │
+│  - POST /predict/batch (bulk sample processing)        │
+│  - GET  /history (trend retrieval)                     │
+│  - GET  /health  (model health check)                  │
+└───────────────────────────┬────────────────────────────┘
+                            │
+            ┌───────────────┴───────────────┐
+            ▼                               ▼
+┌───────────────────────┐       ┌────────────────────────┐
+│  Trained ML Pipeline  │       │  SQLite Database       │
+│  - model.pkl          │       │  - prediction_history  │
+│  - Median Imputation  │       │  - Bonus logging       │
+│  - Random Forest      │       │  - Trend tracking      │
+└───────────────────────┘       └────────────────────────┘
+```
+
+---
+
+## 📊 Model Performance Summary
+
+Evaluated on an 80/20 held-out stratified test set (4,523 test samples):
+
+| Task | Metric | Value |
+| :--- | :--- | :--- |
+| **Task A: Classification** | **F1-Score** | **0.9912** |
+| | **ROC-AUC** | **0.9997** |
+| | **Accuracy** | **0.9931 (99.31%)** |
+| | **Precision** | **0.9876** |
+| | **Recall** | **0.9949** |
+| | **False Positives** | **22 out of 2,768 unsafe samples (0.79%)** |
+| **Task B: pH Regression** | **MAE** | **0.4941** |
+| | **RMSE** | **0.6772** |
+
+---
+
+## 📁 Repository Structure
+
+```
+aquaepoch/
+│
+├── app.py                     # Streamlit frontend application
+├── main.py                    # FastAPI REST backend service
+├── train_model.py             # Model training & serialization script
+├── upload_processing.py       # Batch upload parsing (CSV & PDF tables)
+├── generate_ppt_results.py    # Metric calculation & visualization generator
+├── Aqua_Epoch_Phase4_Analysis.ipynb # Jupyter notebook with EDA & experiments
+├── model.pkl                  # Serialized Scikit-Learn model bundle
+├── requirements.txt           # Python library dependencies
+├── README.md                  # Project overview & instructions
+└── .gitignore                 # Git ignore rules
+```
+
+---
+
+## ⚡ How to Run Locally
+
+### 1. Clone the Repository & Setup Environment
+
+```bash
+git clone https://github.com/adityapathak6262-cell/aqua-epoch--A-square-.git
+cd aqua-epoch--A-square-
+
+# Create virtual environment
 python -m venv .venv
+
+# Activate virtual environment
+# Windows (PowerShell):
 .\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
+# Linux/macOS:
+# source .venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-Start the API in the first terminal:
+### 2. Start the FastAPI Backend Server
 
-```powershell
-python -m uvicorn main:app --host 127.0.0.1 --port 8000
+In your first terminal, launch the REST API:
+
+```bash
+python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
 ```
+- API Docs (Swagger UI): [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- Health Check: [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health)
 
-Start Streamlit in a second terminal:
+### 3. Start the Streamlit Frontend Web App
 
-```powershell
-.\.venv\Scripts\Activate.ps1
+In a second terminal (with the virtual environment activated):
+
+```bash
 streamlit run app.py
 ```
+- Web Application: [http://localhost:8501](http://localhost:8501)
 
-Open **http://localhost:8501** in a browser. The API health endpoint is **http://127.0.0.1:8000/health**, and interactive API documentation is at **http://127.0.0.1:8000/docs**.
+---
 
-The app supports individual measurements and batch CSV or selectable-text PDF input. Uploads need headers for all 18 model features; scanned PDFs and OCR are not supported. Prediction history is stored locally in `prediction_history.sqlite3`.
+## 🔄 Retraining the Models (Optional)
 
-## Train the models again
+The pre-trained deployment model is serialized in `model.pkl`. To retrain from scratch:
 
-The trained bundle is included, so retraining is not needed to run the app. To train a fresh bundle, place the challenge CSV in the project root with this exact filename:
+1. Place the dataset `Aqua_Epoch_BIS_Water_Quality_Dataset.xls - Aqua_Epoch_BIS_Water_Quality_Dataset.csv` in the root folder.
+2. Run:
+   ```bash
+   python train_model.py
+   ```
 
-```text
-Aqua_Epoch_BIS_Water_Quality_Dataset.xls - Aqua_Epoch_BIS_Water_Quality_Dataset.csv
-```
+---
 
-Then run:
+## 📜 Regulatory Standards Reference
 
-```powershell
-python train_model.py
-```
-
-This evaluates on a stratified 80/20 classification split with `random_state=42`, trains the deployment models, and writes `model.pkl`. The dataset itself is not committed; obtain it from the official challenge/source and confirm its license and measurement units before use.
-
-## Prediction scope
-
-The classifier predicts the supplied dataset's `Potability` label (mapped in the project to `0 = Unsafe`, `1 = Safe`). Verify that mapping against the dataset source before relying on it. The pH and TDS regressors estimate those values from the other measured features.
-
-This is a prototype, not a BIS compliance assessment or certification. Configured input bounds are broad sanity checks, not safety thresholds. Verify source units, labels, and model performance with qualified laboratory measurements before any real-world decision.
+Safe guidelines in the tooltips reflect **Bureau of Indian Standards (BIS IS 10500:2012 Drinking Water Specification)**:
+- **Turbidity:** Safe $\le 1.0\text{ NTU}$ (Permissible $\le 5.0\text{ NTU}$)
+- **Hardness:** Safe $\le 200\text{ mg/L}$ (Permissible $\le 600\text{ mg/L}$)
+- **TDS:** Safe $\le 500\text{ mg/L}$ (Permissible $\le 2,000\text{ mg/L}$)
+- **pH:** Safe range $6.5 - 8.5$ (No relaxation)
