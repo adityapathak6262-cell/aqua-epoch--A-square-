@@ -168,7 +168,3 @@ The pre-trained deployment model is serialized in `model.pkl`. To retrain from s
 ## 📜 Regulatory Standards Reference
 
 Safe guidelines in the tooltips reflect **Bureau of Indian Standards (BIS IS 10500:2012 Drinking Water Specification)**:
-- **Turbidity:** Safe $\le 1.0\text{ NTU}$ (Permissible $\le 5.0\text{ NTU}$)
-- **Hardness:** Safe $\le 200\text{ mg/L}$ (Permissible $\le 600\text{ mg/L}$)
-- **TDS:** Safe $\le 500\text{ mg/L}$ (Permissible $\le 2,000\text{ mg/L}$)
-- **pH:** Safe range $6.5 - 8.5$ (No relaxation)
